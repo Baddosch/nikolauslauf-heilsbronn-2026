@@ -8,6 +8,10 @@ Statische Seiten für die Teilnehmerübersicht und die Ergebnisse des Nikolausla
 - `teilnehmer/index.html` – öffentliche Teilnehmerübersicht
 - `ergebnisse/index.html` – Ergebnisübersicht
 
+Teilnehmer- und Ergebnisseite sind eigenständige Ansichten ohne Navigationslinks, auch nicht untereinander. Die Teilnehmerseite verwendet eine zusammenhängende Rennleiste mit unterstrichenem aktivem Reiter analog zum Stadtlauf; auf schmalen Bildschirmen darf die Leiste umbrechen.
+
+Jeder Startlauf hat maximal 80 Plätze. Die Teilnehmerseite zeigt je Rennen die veröffentlichten (bezahlten) Anmeldungen als Anzahl und Füllbalken an. Zusammen gestartete Altersklassen teilen sich diese 80 Plätze. Der Balken endet bei 100 Prozent; die tatsächliche Anzahl bleibt auch bei Überschreitung sichtbar. Dies ist eine Anzeige, keine technische Anmeldebegrenzung.
+
 ## Datenanbindung
 
 Die Seiten erwarten einen öffentlichen, **nur lesenden** Google-Apps-Script-Endpunkt, der ausschließlich freigegebene Felder zurückgibt. Die Konfiguration liegt in `config.js`. Dort wird die URL eingetragen, sobald das Nikolauslauf-Sheet und die passende Web-App bereit sind.

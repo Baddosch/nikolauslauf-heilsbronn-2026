@@ -6,9 +6,9 @@
     { key: "U8", label: "U8" },
     { key: "U10", label: "U10" },
     { key: "U12", label: "U12" },
-    { key: "U14U16", label: "U14 und U16" },
-    { key: "Maenner", label: "U18 männlich und Männer" },
-    { key: "Damen", label: "U18 weiblich und Damen" }
+    { key: "U14U16", label: "U14 und U16", tab: "U14/U16" },
+    { key: "Maenner", label: "U18 männlich und Männer", tab: "Männer/U18" },
+    { key: "Damen", label: "U18 weiblich und Damen", tab: "Damen/U18" }
   ];
 
   function status(message, isError) {
@@ -63,19 +63,26 @@
 
   function renderParticipants(data) {
     var root = document.getElementById("data");
+    var maxParticipants = 80;
     var html = '<div class="tabs" role="tablist" aria-label="Rennen">';
     races.forEach(function (race, index) {
       html += '<button type="button" role="tab" id="tab-' + race.key + '" aria-controls="panel-' + race.key +
-        '" aria-selected="' + (index === 0 ? "true" : "false") + '">' + escapeHtml(race.label) +
+        '" aria-selected="' + (index === 0 ? "true" : "false") + '">' + escapeHtml(race.tab || race.label) +
         " (" + (data[race.key] || []).length + ")</button>";
     });
     html += "</div>";
 
     races.forEach(function (race, raceIndex) {
       var participants = data[race.key] || [];
+      var filledPlaces = Math.min(participants.length, maxParticipants);
+      var percent = filledPlaces / maxParticipants * 100;
       html += '<section class="race" role="tabpanel" id="panel-' + race.key + '" aria-labelledby="tab-' +
-        race.key + '"' + (raceIndex === 0 ? "" : " hidden") + '><h2>' +
-        escapeHtml(race.label) + " (" + participants.length + ")</h2>";
+        race.key + '"' + (raceIndex === 0 ? "" : " hidden") + '><div class="race-header"><h2>' +
+        escapeHtml(race.label) + '</h2><span class="race-count">' + participants.length + " / " +
+        maxParticipants + ' Teilnehmer</span><div class="capacity-bar" role="progressbar" aria-label="Belegte Startplätze" aria-valuemin="0" aria-valuemax="' +
+        maxParticipants + '" aria-valuenow="' + filledPlaces + '" aria-valuetext="' + participants.length +
+        ' von ' + maxParticipants + ' Startplätzen belegt"><div class="capacity-fill" style="width:' +
+        percent + '%"></div></div></div>';
       if (!participants.length) {
         html += '<p class="empty">Noch keine veröffentlichten Anmeldungen.</p>';
       } else {
