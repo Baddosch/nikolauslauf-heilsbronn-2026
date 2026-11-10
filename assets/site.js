@@ -2,16 +2,13 @@
   "use strict";
 
   var races = [
-    { key: "Minis", label: "Minis (Jahrgänge 2021–2022)" },
-    { key: "U8", label: "U8 (Jahrgänge 2019–2020)" },
-    { key: "U10", label: "U10 (Jahrgänge 2017–2018)" },
-    { key: "U12", label: "U12 (Jahrgänge 2015–2016)" },
-    { key: "U14", label: "U14 (Jahrgänge 2013–2014)" },
-    { key: "U16", label: "U16 (Jahrgänge 2011–2012)" },
-    { key: "U18m", label: "U18 männlich (Jahrgänge 2009–2010)" },
-    { key: "Maenner", label: "Männer" },
-    { key: "U18w", label: "U18 weiblich (Jahrgänge 2009–2010)" },
-    { key: "Damen", label: "Damen" }
+    { key: "Minis", label: "Minis" },
+    { key: "U8", label: "U8" },
+    { key: "U10", label: "U10" },
+    { key: "U12", label: "U12" },
+    { key: "U14U16", label: "U14 und U16" },
+    { key: "Maenner", label: "U18 männlich und Männer" },
+    { key: "Damen", label: "U18 weiblich und Damen" }
   ];
 
   function status(message, isError) {
@@ -66,34 +63,58 @@
 
   function renderParticipants(data) {
     var root = document.getElementById("data");
-    var html = "";
-    races.forEach(function (race) {
+    var html = '<div class="tabs" role="tablist" aria-label="Rennen">';
+    races.forEach(function (race, index) {
+      html += '<button type="button" role="tab" id="tab-' + race.key + '" aria-controls="panel-' + race.key +
+        '" aria-selected="' + (index === 0 ? "true" : "false") + '">' + escapeHtml(race.label) +
+        " (" + (data[race.key] || []).length + ")</button>";
+    });
+    html += "</div>";
+
+    races.forEach(function (race, raceIndex) {
       var participants = data[race.key] || [];
-      html += '<section class="race"><h2>' + escapeHtml(race.label) + " (" + participants.length + ')</h2>';
+      html += '<section class="race" role="tabpanel" id="panel-' + race.key + '" aria-labelledby="tab-' +
+        race.key + '"' + (raceIndex === 0 ? "" : " hidden") + '><h2>' +
+        escapeHtml(race.label) + " (" + participants.length + ")</h2>";
       if (!participants.length) {
         html += '<p class="empty">Noch keine veröffentlichten Anmeldungen.</p>';
       } else {
-        ["Weiblich", "Männlich", "Unbekannt"].forEach(function (gender) {
-          var group = participants.filter(function (person) {
-            return (person.geschlecht || "Unbekannt") === gender;
+        ["Minis", "U8", "U10", "U12", "U14", "U16", "U18", "Erwachsene", "Unbekannt"].forEach(function (ageGroup) {
+          ["Weiblich", "Männlich", "Unbekannt"].forEach(function (gender) {
+            var group = participants.filter(function (person) {
+              return (person.altersklasse || "Unbekannt") === ageGroup &&
+                (person.geschlecht || "Unbekannt") === gender;
+            });
+            if (!group.length) return;
+            html += '<h3 class="subheading">' + escapeHtml(ageGroup + " – " + gender) +
+              " (" + group.length + ")</h3>";
+            html += table(["#", "Name", "Verein/Team"], group.map(function (person, index) {
+              return { "#": index + 1, "Name": person.name, "Verein/Team": person.team };
+            }));
           });
-          if (!group.length) return;
-          html += '<h3 class="subheading">' + escapeHtml(gender) + " (" + group.length + ')</h3>';
-          html += table(["#", "Name", "Team/Verein"], group.map(function (person, index) {
-            return { "#": index + 1, "Name": person.name, "Team/Verein": person.team };
-          }));
         });
       }
       html += "</section>";
     });
     root.className = "";
     root.innerHTML = html;
+    root.querySelectorAll('[role="tab"]').forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        root.querySelectorAll('[role="tab"]').forEach(function (item) {
+          item.setAttribute("aria-selected", item === tab ? "true" : "false");
+        });
+        root.querySelectorAll('[role="tabpanel"]').forEach(function (panel) {
+          panel.hidden = panel.id !== tab.getAttribute("aria-controls");
+        });
+      });
+    });
   }
 
   function renderResults(data) {
     var root = document.getElementById("data");
     var raceIds = Object.keys(data).sort(function (a, b) {
-      return String(a).localeCompare(String(b), "de", { numeric: true });
+      return races.findIndex(function (race) { return race.key === a; }) -
+        races.findIndex(function (race) { return race.key === b; });
     });
     if (!raceIds.length) {
       status("Noch keine Ergebnisse veröffentlicht.", false);
@@ -111,15 +132,15 @@
         html += '<h3 class="subheading">' + escapeHtml(title) + "</h3>";
         var rows = category.results || [];
         if (rows.length) {
-          var publicHeaders = ["Platz", "Name", "Zeit", "Team/Verein"];
-          var headers = publicHeaders.filter(function (header) {
-            return rows.some(function (row) { return Object.prototype.hasOwnProperty.call(row, header); });
-          });
-          if (headers.length) {
-            html += table(headers, rows);
-          } else {
-            html += '<p class="empty">Ergebnisdaten liegen vor, aber es sind keine freigegebenen Anzeigefelder vorhanden.</p>';
-          }
+          html += table(["Platz", "Name", "Verein/Team", "Zeit", "Stadtmeister-Platz"], rows.map(function (row) {
+            return {
+              "Platz": row["Platz"],
+              "Name": row["Name"],
+              "Verein/Team": row["Verein/Team"],
+              "Zeit": row["Zeit"],
+              "Stadtmeister-Platz": row["Stadtmeister-Platz"] || "–"
+            };
+          }));
         } else {
           html += '<p class="empty">Noch keine Ergebnisse in dieser Wertung.</p>';
         }

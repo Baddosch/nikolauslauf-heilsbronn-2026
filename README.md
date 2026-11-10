@@ -14,12 +14,12 @@ Die Seiten erwarten einen öffentlichen, **nur lesenden** Google-Apps-Script-End
 
 Unterstützte Aktionen:
 
-- `?action=getTeilnehmer` liefert ein Objekt mit den folgenden Rennschlüsseln und Teilnehmerlisten als Werte: `Minis`, `U8`, `U10`, `U12`, `U14`, `U16`, `U18m`, `Maenner`, `U18w`, `Damen`. Ein Teilnehmer kann `name`, `geschlecht` und `team` enthalten.
-- `?action=getErgebnisse` liefert ein Objekt mit Rennen als Schlüssel. Je Rennen enthält `categories` Gruppen mit `ageGroup`, `gender` und `results` (Ergebniszeilen als Objekte). Auf der öffentlichen Seite werden ausschließlich `Platz`, `Name`, `Zeit` und `Team/Verein` angezeigt, sofern die Felder vorhanden sind.
+- `?action=getTeilnehmer` liefert ein Objekt mit den Rennschlüsseln `Minis`, `U8`, `U10`, `U12`, `U14U16`, `Maenner` und `Damen`. Jeder Teilnehmende enthält nur `name`, `geschlecht`, `team`, `altersklasse` und `rennen`.
+- `?action=getErgebnisse` liefert ein Objekt mit Rennen als Schlüssel. Je Rennen enthält `categories` Gruppen mit `ageGroup`, `gender` und `results` (Ergebniszeilen als Objekte). Ergebnisfelder sind `Platz`, `Name`, `Verein/Team`, `Zeit` und `Stadtmeister-Platz`.
 
-Die konkrete Antwortstruktur und die Zuordnung der Rennen müssen mit dem Nikolauslauf-Sheet und dessen Apps Script abgeglichen werden. Die Stadtlauf-URL wird absichtlich nicht verwendet.
+Die Teilnehmerantwort gruppiert nach tatsächlichem Startlauf (`Minis`, `U8`, `U10`, `U12`, `U14U16`, `Maenner`, `Damen`). Jeder Teilnehmer enthält nur `name`, `geschlecht`, `team`, `altersklasse` und `rennen`; konkrete Geburtsjahre stehen weder in den Seitenlabels noch in der API-Antwort.
 
-**Datenschutz:** Nie das Anmelde-Sheet oder eine beschreibbare Zeitnahme-Web-App direkt als öffentliche Datenquelle verwenden. Der Lese-Endpunkt darf nur zur Veröffentlichung freigegebene Namen/Anzeigenamen, Vereine und Ergebnisdaten ausgeben. E-Mail-Adressen, Geburtsdaten, Zahlungsstatus und andere nicht öffentliche Formularfelder gehören nicht in die Antwort.
+**Datenschutz:** Nie das Anmelde-Sheet oder eine beschreibbare Zeitnahme-Web-App direkt als öffentliche Datenquelle verwenden. Nur das separate, schreibgeschützte Apps Script aus dem Repository `Baddosch/Zeitnahme`, Branch `Nikolauslauf`, Datei `Backend/publicApi.js` ist für die öffentlichen Seiten vorgesehen. Es gibt ausschließlich freigegebene Namens-, Team-, Altersklassen- und Ergebnisfelder aus. E-Mail-Adressen, Geburtsdaten, Jahrgänge, PLZ, Startnummern und Zahlungsstatus gehören nicht in die öffentliche Antwort. Die Stadtmeisterwertung wird im privaten Zeitnahme-Apps-Script anhand der PLZ berechnet; öffentlich erscheint nur der Stadtmeister-Platz.
 
 ## Lokal testen
 
